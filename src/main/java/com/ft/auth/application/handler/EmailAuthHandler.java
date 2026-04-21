@@ -9,7 +9,7 @@ import com.ft.auth.domain.User;
 import com.ft.common.exception.CustomException;
 import org.springframework.stereotype.Component;
 
-import static com.ft.back.common.exception.ErrorCode.AUTH_USER_NOT_FOUND;
+import static com.ft.common.exception.ErrorCode.AUTH_USER_NOT_FOUND;
 
 @Component
 public class EmailAuthHandler extends AbstractAuthHandler {
