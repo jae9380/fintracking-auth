@@ -1,5 +1,6 @@
 package com.ft.auth.application.handler;
 
+import com.ft.auth.application.UserRegisteredEventPublisher;
 import com.ft.auth.application.dto.KakaoUserInfo;
 import com.ft.auth.application.dto.LoginCommand;
 import com.ft.auth.application.dto.LoginResult;
@@ -10,7 +11,10 @@ import com.ft.auth.application.port.TokenProvider;
 import com.ft.auth.application.port.UserRepository;
 import com.ft.auth.domain.OAuth2Provider;
 import com.ft.auth.domain.User;
+import com.ft.common.event.UserRegisteredEvent;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 /**
  * 카카오 OAuth2 로그인 핸들러 (Template Method 패턴)
@@ -29,13 +33,16 @@ import org.springframework.stereotype.Component;
 public class KakaoAuthHandler extends AbstractAuthHandler {
 
     private final KakaoOAuth2Port kakaoOAuth2Port;
+    private final UserRegisteredEventPublisher userRegisteredEventPublisher;
 
     public KakaoAuthHandler(UserRepository userRepository,
                             RefreshTokenRepository refreshTokenRepository,
                             TokenProvider tokenProvider,
-                            KakaoOAuth2Port kakaoOAuth2Port) {
+                            KakaoOAuth2Port kakaoOAuth2Port,
+                            UserRegisteredEventPublisher userRegisteredEventPublisher) {
         super(userRepository, refreshTokenRepository, tokenProvider);
         this.kakaoOAuth2Port = kakaoOAuth2Port;
+        this.userRegisteredEventPublisher = userRegisteredEventPublisher;
     }
 
     /**
@@ -58,7 +65,15 @@ public class KakaoAuthHandler extends AbstractAuthHandler {
         return userRepository.findByEmail(userInfo.email())
                 .orElseGet(() -> {
                     User newUser = User.createOAuth2User(userInfo.email(), OAuth2Provider.KAKAO);
-                    return userRepository.save(newUser);
+                    User saved = userRepository.save(newUser);
+
+                    userRegisteredEventPublisher.publish(new UserRegisteredEvent(
+                            UUID.randomUUID().toString(),
+                            saved.getId(),
+                            saved.getEmail()
+                    ));
+
+                    return saved;
                 });
     }
 

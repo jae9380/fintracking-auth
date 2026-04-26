@@ -11,11 +11,14 @@ import com.ft.auth.application.port.TokenProvider;
 import com.ft.auth.application.port.UserRepository;
 import com.ft.auth.domain.RefreshToken;
 import com.ft.auth.domain.User;
+import com.ft.common.event.UserRegisteredEvent;
 import com.ft.common.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 import static com.ft.common.exception.ErrorCode.*;
 
@@ -29,6 +32,7 @@ public class AuthService {
     private final EmailAuthHandler emailAuthHandler;
     private final KakaoAuthHandler kakaoAuthHandler;
     private final PasswordEncoder passwordEncoder;
+    private final UserRegisteredEventPublisher userRegisteredEventPublisher;
 
     // 회원가입
     @Transactional
@@ -38,7 +42,15 @@ public class AuthService {
         }
         String encodedPassword = passwordEncoder.encode(command.rawPassword());
         User user = User.create(command.email(), encodedPassword);
-        return userRepository.save(user).getId();
+        User saved = userRepository.save(user);
+
+        userRegisteredEventPublisher.publish(new UserRegisteredEvent(
+                UUID.randomUUID().toString(),
+                saved.getId(),
+                saved.getEmail()
+        ));
+
+        return saved.getId();
     }
 
     // 이메일 로그인
