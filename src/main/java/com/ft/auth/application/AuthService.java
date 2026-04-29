@@ -13,6 +13,7 @@ import com.ft.auth.domain.RefreshToken;
 import com.ft.auth.domain.User;
 import com.ft.common.event.UserRegisteredEvent;
 import com.ft.common.exception.CustomException;
+import com.ft.common.metric.annotation.Monitored;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class AuthService {
     private final UserRegisteredEventPublisher userRegisteredEventPublisher;
 
     // 회원가입
+    @Monitored(domain = "auth", layer = "service", api = "signup")
     @Transactional
     public Long signup(SignupCommand command) {
         if (userRepository.existsByEmail(command.email())) {
@@ -54,18 +56,21 @@ public class AuthService {
     }
 
     // 이메일 로그인
+    @Monitored(domain = "auth", layer = "service", api = "login")
     @Transactional
     public LoginResult login(LoginCommand command) {
         return emailAuthHandler.login(command);
     }
 
     // 카카오 OAuth2 로그인 (Find or Create)
+    @Monitored(domain = "auth", layer = "service", api = "oauth2_login")
     @Transactional
     public LoginResult oauth2Login(OAuth2LoginCommand command) {
         return kakaoAuthHandler.loginWithOAuth2(command);
     }
 
     // Access Token 재발급
+    @Monitored(domain = "auth", layer = "service", api = "reissue")
     @Transactional
     public String reissue(String rawRefreshToken) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(rawRefreshToken)
@@ -84,6 +89,7 @@ public class AuthService {
     }
 
     // 로그아웃
+    @Monitored(domain = "auth", layer = "service", api = "logout")
     @Transactional
     public void logout(Long userId) {
         refreshTokenRepository.deleteByUserId(userId);

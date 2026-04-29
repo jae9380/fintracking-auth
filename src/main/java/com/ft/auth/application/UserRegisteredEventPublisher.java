@@ -14,7 +14,7 @@ public class UserRegisteredEventPublisher extends AbstractEventPublisher<UserReg
     }
 
     @Override
-    protected String topic() {
+    public String topic() {
         return KafkaTopic.USER_REGISTERED;
     }
 }
