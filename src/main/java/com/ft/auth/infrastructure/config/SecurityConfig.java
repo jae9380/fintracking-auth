@@ -33,6 +33,7 @@ public class SecurityConfig {
                         "/api/v1/auth/reissue",
                         "/api/v1/auth/oauth2/login"
                 ).permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
