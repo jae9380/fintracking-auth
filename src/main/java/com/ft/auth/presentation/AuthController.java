@@ -45,11 +45,11 @@ public class AuthController {
 
     @Operation(summary = "Access Token 재발급")
     @PostMapping("/reissue")
-    public ApiResponse<String> reissue(
+    public ApiResponse<AuthResponse> reissue(
             @RequestHeader("Authorization") String bearerToken) {
         String refreshToken = bearerToken.replace("Bearer ", "");
-        String newAccessToken = authService.reissue(refreshToken);
-        return ApiResponse.success(newAccessToken);
+        LoginResult result = authService.reissue(refreshToken);
+        return ApiResponse.success(AuthResponse.from(result));
     }
 
     @Operation(summary = "로그아웃")

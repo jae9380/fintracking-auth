@@ -72,7 +72,7 @@ public class AuthService {
     // Access Token 재발급
     @Monitored(domain = "auth", layer = "service", api = "reissue")
     @Transactional
-    public String reissue(String rawRefreshToken) {
+    public LoginResult reissue(String rawRefreshToken) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(rawRefreshToken)
                 .orElseThrow(() -> new CustomException(AUTH_INVALID_TOKEN));
 
@@ -85,7 +85,7 @@ public class AuthService {
         refreshToken.rotate(newRawRefreshToken, tokenProvider.getRefreshTokenExpiry());
         refreshTokenRepository.save(refreshToken);
 
-        return newAccessToken;
+        return new LoginResult(newAccessToken, newRawRefreshToken);
     }
 
     // 로그아웃
