@@ -1,5 +1,6 @@
 package com.ft.auth.application;
 
+import com.ft.auth.application.dto.LoginResult;
 import com.ft.auth.application.dto.SignupCommand;
 import com.ft.auth.application.handler.EmailAuthHandler;
 import com.ft.auth.application.handler.KakaoAuthHandler;
@@ -84,7 +85,7 @@ class AuthServiceTest {
     class Reissue {
 
         @Test
-        @DisplayName("성공 - 유효한 토큰이면 새 AccessToken을 반환한다")
+        @DisplayName("성공 - 유효한 토큰이면 새 AccessToken과 RefreshToken을 반환한다")
         void reissue_whenValidToken_returnsNewAccessToken() {
             // given
             String rawToken = "valid-refresh-token";
@@ -95,10 +96,11 @@ class AuthServiceTest {
             given(tokenProvider.getRefreshTokenExpiry()).willReturn(LocalDateTime.now().plusDays(7));
 
             // when
-            String newAccessToken = authService.reissue(rawToken);
+            LoginResult result = authService.reissue(rawToken);
 
             // then
-            assertThat(newAccessToken).isEqualTo("new-access-token");
+            assertThat(result.accessToken()).isEqualTo("new-access-token");
+            assertThat(result.refreshToken()).isEqualTo("new-refresh-token");
             then(refreshTokenRepository).should().save(any(RefreshToken.class));
         }
 
